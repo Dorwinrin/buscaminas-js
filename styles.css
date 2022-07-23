@@ -1,0 +1,15 @@
+body {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+h1 {
+  color: #bd542b;
+}
+
+.tablero {
+    display: grid;
+}
