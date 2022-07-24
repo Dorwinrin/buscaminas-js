@@ -3,10 +3,13 @@ const BOMB = '💣';
 const tilesAmount = 96;
 const columnsAmount = 12;
 const bombsAmount = 24;
-const toggledTiles = new Array(tilesAmount).fill(false);
+const revealedTiles = new Array(tilesAmount).fill(false);
 const flaggedTiles = new Array(tilesAmount).fill(false);
 const bombTiles = new Array(tilesAmount).fill(false);
 const numberTiles = new Array(tilesAmount).fill(0);
+const gameState = {
+  tilesRevealed: 0,
+};
 
 (function init() {
   console.log('Init game');
@@ -14,6 +17,11 @@ const numberTiles = new Array(tilesAmount).fill(0);
   initBombs(bombTiles, bombsAmount);
   initNumbers(numberTiles, bombTiles);
 })();
+
+function checkGameState() {
+  gameState.tilesRevealed = revealedTiles.filter((revealed) => revealed).length;
+  if (gameState.tilesRevealed === tilesAmount - bombsAmount) alert('You win!');
+}
 
 function getTilePosition(i) {
   const isTop = i < columnsAmount;
@@ -26,11 +34,13 @@ function getTilePosition(i) {
 function handleClick(tile, index) {
   return () => {
     tile.classList.add('revealed');
-    toggledTiles[index] = true;
+    revealedTiles[index] = true;
     tile.onclick = null;
     tile.oncontextmenu = (event) => event.preventDefault();
     tile.innerText = bombTiles[index] ? BOMB : numberTiles[index] || '';
+    if (tile.innerText === BOMB) alert('GAME OVER');
     if (tile.innerText === '') propagateClick(index);
+    checkGameState();
   };
 }
 
