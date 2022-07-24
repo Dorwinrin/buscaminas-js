@@ -1,17 +1,37 @@
 const FLAG = '🚩';
 const BOMB = '💣';
 const tilesAmount = 96;
+const bombsAmount = 30;
 const toggledTiles = new Array(tilesAmount).fill(false);
 const flaggedTiles = new Array(tilesAmount).fill(false);
+const bombTiles = new Array(tilesAmount).fill(false);
+const numberTiles = new Array(tilesAmount).fill(0);
 
 (function init() {
   console.log('Init game');
   initTiles(tilesAmount);
+  initBombs(bombTiles, bombsAmount);
+  initNumbers(numberTiles, bombTiles);
+  console.log(bombTiles)
 })();
+
+function initBombs(bombTiles, bombsAmount) {
+  while (bombsAmount > 0) {
+    const index = Math.floor(Math.random() * bombTiles.length);
+    if (!bombTiles[index]) {
+      bombTiles[index] = true;
+      bombsAmount--;
+    }
+  }
+}
+
+function initNumbers(numberTiles, bombTiles) {
+
+}
 
 function initTiles(tiles) {
   const board = document.getElementById('board');
-  for (let i = 1; i <= tiles; i++) {
+  for (let i = 0; i < tiles; i++) {
     const tile = document.createElement('div');
     tile.setAttribute('id', `tile-${i}`);
     tile.classList.add('tile');
