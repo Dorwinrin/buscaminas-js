@@ -24,13 +24,10 @@ function initTiles(tiles) {
 
 function handleClick(tile, index) {
   return () => {
-    if (toggledTiles[index]) {
-      tile.classList.remove('revealed');
-      toggledTiles[index] = false;
-    } else {
-      tile.classList.add('revealed');
-      toggledTiles[index] = true;
-    }
+    tile.classList.add('revealed');
+    toggledTiles[index] = true;
+    tile.onclick = null;
+    tile.oncontextmenu = (event) => event.preventDefault();
   };
 }
 
@@ -38,13 +35,15 @@ function handleRightClick(tile, index) {
   return (event) => {
     event.preventDefault();
     if (flaggedTiles[index]) {
+      flaggedTiles[index] = false;
       tile.classList.remove('flagged');
       tile.innerText = '';
-      flaggedTiles[index] = false;
+      tile.onclick = handleClick(tile, index);
     } else {
+      flaggedTiles[index] = true;
       tile.classList.add('flagged');
       tile.innerText = FLAG;
-      flaggedTiles[index] = true;
+      tile.onclick = null;
     }
   };
 }
