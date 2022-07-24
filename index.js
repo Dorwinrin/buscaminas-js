@@ -1,6 +1,7 @@
 const FLAG = '🚩';
 const BOMB = '💣';
 const tilesAmount = 96;
+const columnsAmount = 12;
 const bombsAmount = 30;
 const toggledTiles = new Array(tilesAmount).fill(false);
 const flaggedTiles = new Array(tilesAmount).fill(false);
@@ -12,7 +13,6 @@ const numberTiles = new Array(tilesAmount).fill(0);
   initTiles(tilesAmount);
   initBombs(bombTiles, bombsAmount);
   initNumbers(numberTiles, bombTiles);
-  console.log(bombTiles)
 })();
 
 function initBombs(bombTiles, bombsAmount) {
@@ -26,7 +26,27 @@ function initBombs(bombTiles, bombsAmount) {
 }
 
 function initNumbers(numberTiles, bombTiles) {
+  for (let i = 0; i < numberTiles.length; i++) {
+    if (bombTiles[i]) continue;
+    const adjacentIndices = [];
+    const isTop = i < columnsAmount;
+    const isBottom = i > numberTiles.length - columnsAmount;
+    const isLeft = i % columnsAmount === 0;
+    const isRight = i % columnsAmount === columnsAmount - 1;
 
+    if (!isTop && !isLeft) adjacentIndices.push(i - columnsAmount - 1);
+    if (!isTop) adjacentIndices.push(i - columnsAmount);
+    if (!isTop && !isRight) adjacentIndices.push(i - columnsAmount + 1);
+    if (!isLeft) adjacentIndices.push(i - 1);
+    if (!isRight) adjacentIndices.push(i + 1);
+    if (!isBottom && !isLeft) adjacentIndices.push(i + columnsAmount - 1);
+    if (!isBottom) adjacentIndices.push(i + columnsAmount);
+    if (!isBottom && !isRight) adjacentIndices.push(i + columnsAmount + 1);
+
+    for (const adjacent of adjacentIndices) {
+      if (bombTiles[adjacent]) numberTiles[i]++;
+    }
+  }
 }
 
 function initTiles(tiles) {
@@ -48,6 +68,7 @@ function handleClick(tile, index) {
     toggledTiles[index] = true;
     tile.onclick = null;
     tile.oncontextmenu = (event) => event.preventDefault();
+    tile.innerText = bombTiles[index] ? BOMB : numberTiles[index];
   };
 }
 
