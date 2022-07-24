@@ -17,7 +17,8 @@ const texts = {
   (press F5 to restart)`,
   LOSE: `YOU LOSE!
   (press F5 to restart)`,
-}
+};
+const board = document.getElementById('board');
 const subtitle = document.getElementById('subtitle');
 
 (function init() {
@@ -30,8 +31,16 @@ const subtitle = document.getElementById('subtitle');
 function checkGameState() {
   gameState.tilesRevealed = revealedTiles.filter((revealed) => revealed).length;
   if (gameState.tilesRevealed === tilesAmount - bombsAmount) {
-    subtitle.innerText = texts.WIN;
-  };
+    winGame();
+  }
+}
+
+function winGame() {
+  subtitle.innerText = texts.WIN;
+  for (let i = 0; i < tilesAmount; i++) {
+    const tile = document.getElementById(`tile-${i}`);
+    disableTile(tile);    
+  }
 }
 
 function getTilePosition(i) {
@@ -46,13 +55,31 @@ function handleClick(tile, index) {
   return () => {
     tile.classList.add('revealed');
     revealedTiles[index] = true;
-    tile.onclick = null;
-    tile.oncontextmenu = (event) => event.preventDefault();
+    disableTile(tile);
     tile.innerText = bombTiles[index] ? BOMB : numberTiles[index] || '';
-    if (tile.innerText === BOMB) subtitle.innerText = texts.LOSE;
+    if (tile.innerText === BOMB) {
+      loseGame();
+    }
     if (tile.innerText === '') propagateClick(index);
     checkGameState();
   };
+}
+
+function disableTile(tile) {
+  tile.onclick = null;
+  tile.oncontextmenu = (event) => event.preventDefault();
+}
+
+function loseGame() {
+  subtitle.innerText = texts.LOSE;
+  for (let i = 0; i < tilesAmount; i++) {
+    const tile = document.getElementById(`tile-${i}`);
+    disableTile(tile);
+    if (bombTiles[i]) {
+      const tile = document.getElementById(`tile-${i}`);
+      tile.innerText = BOMB;
+    }
+  }
 }
 
 function handleRightClick(tile, index) {
@@ -109,7 +136,6 @@ function getAdjacentIndices(i) {
 }
 
 function initTiles(tiles) {
-  const board = document.getElementById('board');
   for (let i = 0; i < tiles; i++) {
     const tile = document.createElement('div');
     tile.setAttribute('id', `tile-${i}`);
