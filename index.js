@@ -10,9 +10,18 @@ const numberTiles = new Array(tilesAmount).fill(0);
 const gameState = {
   tilesRevealed: 0,
 };
+const texts = {
+  START: `Click to reveal a tile
+  Right-click to flag a tile`,
+  WIN: `YOU WIN!
+  (press F5 to restart)`,
+  LOSE: `YOU LOSE!
+  (press F5 to restart)`,
+}
+const subtitle = document.getElementById('subtitle');
 
 (function init() {
-  console.log('Init game');
+  subtitle.innerText = texts.START;
   initTiles(tilesAmount);
   initBombs(bombTiles, bombsAmount);
   initNumbers(numberTiles, bombTiles);
@@ -20,7 +29,9 @@ const gameState = {
 
 function checkGameState() {
   gameState.tilesRevealed = revealedTiles.filter((revealed) => revealed).length;
-  if (gameState.tilesRevealed === tilesAmount - bombsAmount) alert('You win!');
+  if (gameState.tilesRevealed === tilesAmount - bombsAmount) {
+    subtitle.innerText = texts.WIN;
+  };
 }
 
 function getTilePosition(i) {
@@ -38,7 +49,7 @@ function handleClick(tile, index) {
     tile.onclick = null;
     tile.oncontextmenu = (event) => event.preventDefault();
     tile.innerText = bombTiles[index] ? BOMB : numberTiles[index] || '';
-    if (tile.innerText === BOMB) alert('GAME OVER');
+    if (tile.innerText === BOMB) subtitle.innerText = texts.LOSE;
     if (tile.innerText === '') propagateClick(index);
     checkGameState();
   };
