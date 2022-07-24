@@ -2,7 +2,7 @@ const FLAG = '🚩';
 const BOMB = '💣';
 const tilesAmount = 96;
 const columnsAmount = 12;
-const bombsAmount = 30;
+const bombsAmount = 10;
 const toggledTiles = new Array(tilesAmount).fill(false);
 const flaggedTiles = new Array(tilesAmount).fill(false);
 const bombTiles = new Array(tilesAmount).fill(false);
@@ -68,7 +68,7 @@ function handleClick(tile, index) {
     toggledTiles[index] = true;
     tile.onclick = null;
     tile.oncontextmenu = (event) => event.preventDefault();
-    tile.innerText = bombTiles[index] ? BOMB : numberTiles[index];
+    tile.innerText = bombTiles[index] ? BOMB : numberTiles[index] || '';
   };
 }
 
