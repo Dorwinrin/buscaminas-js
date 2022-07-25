@@ -1,8 +1,8 @@
 const FLAG = '🚩';
 const BOMB = '💣';
-const tilesAmount = 96;
-const columnsAmount = 12;
-const bombsAmount = 24;
+const tilesAmount = 36;
+const columnsAmount = 6;
+const bombsAmount = 10;
 const revealedTiles = new Array(tilesAmount).fill(false);
 const flaggedTiles = new Array(tilesAmount).fill(false);
 const bombTiles = new Array(tilesAmount).fill(false);
@@ -39,7 +39,11 @@ function winGame() {
   subtitle.innerText = texts.WIN;
   for (let i = 0; i < tilesAmount; i++) {
     const tile = document.getElementById(`tile-${i}`);
-    disableTile(tile);    
+    disableTile(tile);
+    if (bombTiles[i]) {
+      const tile = document.getElementById(`tile-${i}`);
+      tile.innerText = FLAG;
+    }  
   }
 }
 
@@ -87,12 +91,10 @@ function handleRightClick(tile, index) {
     event.preventDefault();
     if (flaggedTiles[index]) {
       flaggedTiles[index] = false;
-      tile.classList.remove('flagged');
       tile.innerText = '';
       tile.onclick = handleClick(tile, index);
     } else {
       flaggedTiles[index] = true;
-      tile.classList.add('flagged');
       tile.innerText = FLAG;
       tile.onclick = null;
     }
