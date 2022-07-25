@@ -20,19 +20,28 @@ const texts = {
 };
 const board = document.getElementById('board');
 const subtitle = document.getElementById('subtitle');
+const tilesRemainingElement = document.getElementById('tilesRemaining');
+const bombsRemainingElement = document.getElementById('bombsRemaining');
 
 (function init() {
   subtitle.innerText = texts.START;
   initTiles(tilesAmount);
   initBombs(bombTiles, bombsAmount);
   initNumbers(numberTiles, bombTiles);
+  updateCounters();
 })();
 
 function checkGameState() {
   gameState.tilesRevealed = revealedTiles.filter((revealed) => revealed).length;
+  updateCounters();
   if (gameState.tilesRevealed === tilesAmount - bombsAmount) {
     winGame();
   }
+}
+
+function updateCounters() {
+  tilesRemainingElement.innerText = tilesAmount - gameState.tilesRevealed - bombsAmount;
+  bombsRemainingElement.innerText = bombsAmount - flaggedTiles.filter(flagged => flagged).length;
 }
 
 function winGame() {
@@ -45,6 +54,7 @@ function winGame() {
       tile.innerText = FLAG;
     }  
   }
+  updateCounters();
 }
 
 function getTilePosition(i) {
@@ -97,6 +107,7 @@ function handleRightClick(tile, index) {
       flaggedTiles[index] = true;
       tile.innerText = FLAG;
       tile.onclick = null;
+      updateCounters();
     }
   };
 }
