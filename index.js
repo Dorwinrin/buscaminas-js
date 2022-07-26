@@ -3,33 +3,41 @@ const BOMB = '💣';
 const tilesAmount = 36;
 const columnsAmount = 6;
 const bombsAmount = 10;
-const revealedTiles = new Array(tilesAmount).fill(false);
-const flaggedTiles = new Array(tilesAmount).fill(false);
-const bombTiles = new Array(tilesAmount).fill(false);
-const numberTiles = new Array(tilesAmount).fill(0);
+const revealedTiles = new Array(tilesAmount);
+const flaggedTiles = new Array(tilesAmount);
+const bombTiles = new Array(tilesAmount);
+const numberTiles = new Array(tilesAmount);
 const gameState = {
   tilesRevealed: 0,
 };
 const texts = {
   START: `Click to reveal a tile
   Right-click to flag a tile`,
-  WIN: `YOU WIN!
-  (press F5 to restart)`,
-  LOSE: `YOU LOSE!
-  (press F5 to restart)`,
+  WIN: `YOU WIN!`,
+  LOSE: `YOU LOSE!`,
 };
 const board = document.getElementById('board');
+const bombsRemainingElement = document.getElementById('bombsRemaining');
+const restartButton = document.getElementById('restartButton');
 const subtitle = document.getElementById('subtitle');
 const tilesRemainingElement = document.getElementById('tilesRemaining');
-const bombsRemainingElement = document.getElementById('bombsRemaining');
 
-(function init() {
+restartButton.addEventListener('click', restartGame);
+initGame();
+
+function initGame() {
   subtitle.innerText = texts.START;
+  board.replaceChildren([]);
   initTiles(tilesAmount);
   initBombs(bombTiles, bombsAmount);
   initNumbers(numberTiles, bombTiles);
   updateCounters();
-})();
+  restartButton.setAttribute('disabled', true);
+};
+
+function restartGame() {
+  initGame();
+}
 
 function checkGameState() {
   gameState.tilesRevealed = revealedTiles.filter((revealed) => revealed).length;
@@ -41,7 +49,7 @@ function checkGameState() {
 
 function updateCounters() {
   tilesRemainingElement.innerText = tilesAmount - gameState.tilesRevealed - bombsAmount;
-  bombsRemainingElement.innerText = bombsAmount - flaggedTiles.filter(flagged => flagged).length;
+  bombsRemainingElement.innerText = bombsAmount - flaggedTiles.filter((flagged) => flagged).length;
 }
 
 function winGame() {
@@ -52,9 +60,10 @@ function winGame() {
     if (bombTiles[i]) {
       const tile = document.getElementById(`tile-${i}`);
       tile.innerText = FLAG;
-    }  
+    }
   }
   updateCounters();
+  restartButton.removeAttribute('disabled');
 }
 
 function getTilePosition(i) {
@@ -94,6 +103,7 @@ function loseGame() {
       tile.innerText = BOMB;
     }
   }
+  restartButton.removeAttribute('disabled');
 }
 
 function handleRightClick(tile, index) {
@@ -113,6 +123,8 @@ function handleRightClick(tile, index) {
 }
 
 function initBombs(bombTiles, bombsAmount) {
+  bombTiles.fill(false);
+
   while (bombsAmount > 0) {
     const index = Math.floor(Math.random() * bombTiles.length);
     if (!bombTiles[index]) {
@@ -123,9 +135,10 @@ function initBombs(bombTiles, bombsAmount) {
 }
 
 function initNumbers(numberTiles, bombTiles) {
+  numberTiles.fill(0);
+
   for (let i = 0; i < numberTiles.length; i++) {
     if (bombTiles[i]) continue;
-
     const adjacentIndices = getAdjacentIndices(i);
     for (const adjacent of adjacentIndices) {
       if (bombTiles[adjacent]) numberTiles[i]++;
@@ -149,11 +162,14 @@ function getAdjacentIndices(i) {
 }
 
 function initTiles(tiles) {
+  revealedTiles.fill(false);
+  flaggedTiles.fill(false);
+  gameState.tilesRevealed = 0;
+
   for (let i = 0; i < tiles; i++) {
     const tile = document.createElement('div');
     tile.setAttribute('id', `tile-${i}`);
     tile.classList.add('tile');
-
     tile.onclick = handleClick(tile, i);
     tile.oncontextmenu = handleRightClick(tile, i);
     board.appendChild(tile);
