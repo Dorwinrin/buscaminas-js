@@ -1,7 +1,7 @@
 const config = {
-  tilesAmount: 60,
-  columnsAmount: 10,
-  bombsAmount: 12,
+  tilesAmount: 20,
+  columnsAmount: 5,
+  bombsAmount: 2,
 };
 const elements = {
   board: document.getElementById('board'),
@@ -27,14 +27,13 @@ const texts = {
 };
 
 (() => {
-  elements.restartButton.addEventListener('click', restartGame);
+  elements.restartButton.onclick = initGame;
   document.documentElement.style.setProperty('--number-of-columns', config.columnsAmount);
   initGame();
 })();
 
 function checkGameState() {
   const revealedTiles = gameState.revealedTiles.filter((revealed) => revealed).length;
-  updateCounters();
   if (revealedTiles === config.tilesAmount - config.bombsAmount) {
     winGame();
   }
@@ -47,7 +46,12 @@ function disableTile(tile) {
 
 function getAdjacentIndices(i) {
   const adjacentIndices = [];
-  const { isTop, isLeft, isRight, isBottom } = getTilePosition(i);
+  const { isTop, isLeft, isRight, isBottom } = {
+    isTop: i < config.columnsAmount,
+    isBottom: i > config.tilesAmount - config.columnsAmount,
+    isLeft: i % config.columnsAmount === 0,
+    isRight: i % config.columnsAmount === config.columnsAmount - 1,
+  };
 
   if (!isTop && !isLeft) adjacentIndices.push(i - config.columnsAmount - 1);
   if (!isTop) adjacentIndices.push(i - config.columnsAmount);
@@ -57,28 +61,26 @@ function getAdjacentIndices(i) {
   if (!isBottom && !isLeft) adjacentIndices.push(i + config.columnsAmount - 1);
   if (!isBottom) adjacentIndices.push(i + config.columnsAmount);
   if (!isBottom && !isRight) adjacentIndices.push(i + config.columnsAmount + 1);
-  return adjacentIndices;
-}
 
-function getTilePosition(i) {
-  const isTop = i < config.columnsAmount;
-  const isBottom = i > config.tilesAmount - config.columnsAmount;
-  const isLeft = i % config.columnsAmount === 0;
-  const isRight = i % config.columnsAmount === config.columnsAmount - 1;
-  return { isTop, isLeft, isRight, isBottom };
+  return adjacentIndices;
 }
 
 function handleClick(tile, index) {
   return () => {
-    tile.classList.add('revealed');
+    const clickResult = gameState.bombTiles[index]
+      ? texts.BOMB
+      : gameState.numberTiles[index] || '';
+
     gameState.revealedTiles[index] = true;
+    tile.classList.add('revealed');
+    tile.innerText = clickResult;
     disableTile(tile);
-    tile.innerText = gameState.bombTiles[index] ? texts.BOMB : gameState.numberTiles[index] || '';
-    if (tile.innerText === texts.BOMB) {
-      loseGame();
-    }
-    if (tile.innerText === '') propagateClick(index);
+
+    if (clickResult === texts.BOMB) loseGame();
+    if (clickResult === '') propagateClick(index);
+
     checkGameState();
+    updateCounters();
   };
 }
 
@@ -164,12 +166,8 @@ function propagateClick(index) {
   const adjacentIndices = getAdjacentIndices(index);
   for (const adjacent of adjacentIndices) {
     const tile = document.getElementById(`tile-${adjacent}`);
-    if (tile.onclick !== null) tile.onclick();
+    if (tile?.onclick != null) tile.onclick();
   }
-}
-
-function restartGame() {
-  initGame();
 }
 
 function updateCounters() {
@@ -186,10 +184,8 @@ function winGame() {
     const tile = document.getElementById(`tile-${i}`);
     disableTile(tile);
     if (gameState.bombTiles[i]) {
-      const tile = document.getElementById(`tile-${i}`);
       tile.innerText = texts.FLAG;
     }
   }
-  updateCounters();
   elements.restartButton.removeAttribute('disabled');
 }
