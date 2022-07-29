@@ -93,8 +93,8 @@ function handleRightClick(tile, index) {
       gameState.flaggedTiles[index] = true;
       tile.innerText = texts.FLAG;
       tile.onclick = null;
-      updateCounters();
     }
+    updateCounters();
   };
 }
 
@@ -174,10 +174,10 @@ function restartGame() {
 
 function updateCounters() {
   const revealedTiles = gameState.revealedTiles.filter((revealed) => revealed).length;
+  const flaggedTiles = gameState.flaggedTiles.filter((flagged) => flagged).length;
   elements.tilesRemainingCounter.innerText =
-    config.tilesAmount - revealedTiles - config.bombsAmount;
-  elements.bombsRemainingCounter.innerText =
-    config.bombsAmount - gameState.flaggedTiles.filter((flagged) => flagged).length;
+    config.tilesAmount - config.bombsAmount - revealedTiles;
+  elements.bombsRemainingCounter.innerText = config.bombsAmount - flaggedTiles;
 }
 
 function winGame() {
