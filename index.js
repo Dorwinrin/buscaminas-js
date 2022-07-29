@@ -1,7 +1,7 @@
 const config = {
-  tilesAmount: 20,
-  columnsAmount: 5,
-  bombsAmount: 2,
+  tilesAmount: 60,
+  columnsAmount: 12,
+  bombsAmount: 15,
 };
 const elements = {
   board: document.getElementById('board'),
