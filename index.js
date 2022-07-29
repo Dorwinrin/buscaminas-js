@@ -3,6 +3,13 @@ const config = {
   columnsAmount: 10,
   bombsAmount: 12,
 };
+const elements = {
+  board: document.getElementById('board'),
+  bombsRemainingCounter: document.getElementById('bombsRemaining'),
+  restartButton: document.getElementById('restartButton'),
+  subtitle: document.getElementById('subtitle'),
+  tilesRemainingCounter: document.getElementById('tilesRemaining'),
+};
 const gameState = {
   bombTiles: new Array(config.tilesAmount),
   flaggedTiles: new Array(config.tilesAmount),
@@ -18,16 +25,10 @@ const texts = {
   Right-click to flag a tile`,
   WIN: `YOU WIN!`,
 };
-const elements = {
-  board: document.getElementById('board'),
-  bombsRemainingCounter: document.getElementById('bombsRemaining'),
-  restartButton: document.getElementById('restartButton'),
-  subtitle: document.getElementById('subtitle'),
-  tilesRemainingCounter: document.getElementById('tilesRemaining'),
-};
 
 (() => {
   elements.restartButton.addEventListener('click', restartGame);
+  document.documentElement.style.setProperty('--number-of-columns', config.columnsAmount);
   initGame();
 })();
 

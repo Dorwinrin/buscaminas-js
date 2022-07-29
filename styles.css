@@ -1,8 +1,11 @@
-body {
+:root {
   --background-color: darkgrey;
   --tile-color: lightgrey;
   --tile-border-width: 4px;
-  --number-of-columns: 10;
+  --number-of-columns: 0;
+}
+
+body {  
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
