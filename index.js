@@ -1,22 +1,21 @@
-const config = {
-  tilesAmount: 60,
-  columnsAmount: 12,
-  bombsAmount: 15,
+const difficultyModes = {
+  easy: {
+    tilesAmount: 40,
+    columnsAmount: 8,
+    bombsAmount: 8,
+  },
+  normal: {
+    tilesAmount: 60,
+    columnsAmount: 12,
+    bombsAmount: 15,
+  },
+  hard: {
+    tilesAmount: 90,
+    columnsAmount: 15,
+    bombsAmount: 30,
+  },
 };
-const elements = {
-  board: document.getElementById('board'),
-  bombsRemainingCounter: document.getElementById('bombsRemaining'),
-  restartButton: document.getElementById('restartButton'),
-  subtitle: document.getElementById('subtitle'),
-  tilesRemainingCounter: document.getElementById('tilesRemaining'),
-};
-const gameState = {
-  bombTiles: new Array(config.tilesAmount),
-  flaggedTiles: new Array(config.tilesAmount),
-  numberTiles: new Array(config.tilesAmount),
-  revealedTiles: new Array(config.tilesAmount),
-  tilesRevealed: 0,
-};
+
 const texts = {
   BOMB: '💣',
   FLAG: '🚩',
@@ -26,15 +25,25 @@ const texts = {
   WIN: `YOU WIN!`,
 };
 
+const elements = {
+  board: document.getElementById('board'),
+  bombsRemainingCounter: document.getElementById('bombsRemaining'),
+  difficulty: document.getElementById('difficulty'),
+  restartButton: document.getElementById('restartButton'),
+  subtitle: document.getElementById('subtitle'),
+  tilesRemainingCounter: document.getElementById('tilesRemaining'),
+};
+
+let gameState = createGameState(elements.difficulty.value);
+
 (() => {
   elements.restartButton.onclick = initGame;
-  document.documentElement.style.setProperty('--number-of-columns', config.columnsAmount);
   initGame();
 })();
 
 function checkGameState() {
   const revealedTiles = gameState.revealedTiles.filter((revealed) => revealed).length;
-  if (revealedTiles === config.tilesAmount - config.bombsAmount) {
+  if (revealedTiles === gameState.config.tilesAmount - gameState.config.bombsAmount) {
     winGame();
   }
 }
@@ -44,23 +53,36 @@ function disableTile(tile) {
   tile.oncontextmenu = (event) => event.preventDefault();
 }
 
+function createGameState(difficulty) {
+  const config = difficultyModes[difficulty];
+
+  return {
+    bombTiles: new Array(config.tilesAmount),
+    config,
+    flaggedTiles: new Array(config.tilesAmount),
+    numberTiles: new Array(config.tilesAmount),
+    revealedTiles: new Array(config.tilesAmount),
+    tilesRevealed: 0,
+  };
+}
+
 function getAdjacentIndices(i) {
   const adjacentIndices = [];
   const { isTop, isLeft, isRight, isBottom } = {
-    isTop: i < config.columnsAmount,
-    isBottom: i > config.tilesAmount - config.columnsAmount,
-    isLeft: i % config.columnsAmount === 0,
-    isRight: i % config.columnsAmount === config.columnsAmount - 1,
+    isTop: i < gameState.config.columnsAmount,
+    isBottom: i > gameState.config.tilesAmount - gameState.config.columnsAmount,
+    isLeft: i % gameState.config.columnsAmount === 0,
+    isRight: i % gameState.config.columnsAmount === gameState.config.columnsAmount - 1,
   };
 
-  if (!isTop && !isLeft) adjacentIndices.push(i - config.columnsAmount - 1);
-  if (!isTop) adjacentIndices.push(i - config.columnsAmount);
-  if (!isTop && !isRight) adjacentIndices.push(i - config.columnsAmount + 1);
+  if (!isTop && !isLeft) adjacentIndices.push(i - gameState.config.columnsAmount - 1);
+  if (!isTop) adjacentIndices.push(i - gameState.config.columnsAmount);
+  if (!isTop && !isRight) adjacentIndices.push(i - gameState.config.columnsAmount + 1);
   if (!isLeft) adjacentIndices.push(i - 1);
   if (!isRight) adjacentIndices.push(i + 1);
-  if (!isBottom && !isLeft) adjacentIndices.push(i + config.columnsAmount - 1);
-  if (!isBottom) adjacentIndices.push(i + config.columnsAmount);
-  if (!isBottom && !isRight) adjacentIndices.push(i + config.columnsAmount + 1);
+  if (!isBottom && !isLeft) adjacentIndices.push(i + gameState.config.columnsAmount - 1);
+  if (!isBottom) adjacentIndices.push(i + gameState.config.columnsAmount);
+  if (!isBottom && !isRight) adjacentIndices.push(i + gameState.config.columnsAmount + 1);
 
   return adjacentIndices;
 }
@@ -113,13 +135,16 @@ function initBombs(bombTiles, bombsAmount) {
 }
 
 function initGame() {
+  gameState = createGameState(elements.difficulty.value);
+
   elements.subtitle.innerText = texts.START;
   elements.board.replaceChildren([]);
-  initTiles(config.tilesAmount);
-  initBombs(gameState.bombTiles, config.bombsAmount);
+  document.documentElement.style.setProperty('--number-of-columns', gameState.config.columnsAmount);
+
+  initTiles(gameState.config.tilesAmount);
+  initBombs(gameState.bombTiles, gameState.config.bombsAmount);
   initNumbers(gameState.numberTiles, gameState.bombTiles);
   updateCounters();
-  elements.restartButton.setAttribute('disabled', true);
 }
 
 function initNumbers(numberTiles, bombTiles) {
@@ -151,7 +176,7 @@ function initTiles(tiles) {
 
 function loseGame() {
   elements.subtitle.innerText = texts.LOSE;
-  for (let i = 0; i < config.tilesAmount; i++) {
+  for (let i = 0; i < gameState.config.tilesAmount; i++) {
     const tile = document.getElementById(`tile-${i}`);
     disableTile(tile);
     if (gameState.bombTiles[i]) {
@@ -159,7 +184,6 @@ function loseGame() {
       tile.innerText = texts.BOMB;
     }
   }
-  elements.restartButton.removeAttribute('disabled');
 }
 
 function propagateClick(index) {
@@ -174,18 +198,17 @@ function updateCounters() {
   const revealedTiles = gameState.revealedTiles.filter((revealed) => revealed).length;
   const flaggedTiles = gameState.flaggedTiles.filter((flagged) => flagged).length;
   elements.tilesRemainingCounter.innerText =
-    config.tilesAmount - config.bombsAmount - revealedTiles;
-  elements.bombsRemainingCounter.innerText = config.bombsAmount - flaggedTiles;
+    gameState.config.tilesAmount - gameState.config.bombsAmount - revealedTiles;
+  elements.bombsRemainingCounter.innerText = gameState.config.bombsAmount - flaggedTiles;
 }
 
 function winGame() {
   elements.subtitle.innerText = texts.WIN;
-  for (let i = 0; i < config.tilesAmount; i++) {
+  for (let i = 0; i < gameState.config.tilesAmount; i++) {
     const tile = document.getElementById(`tile-${i}`);
     disableTile(tile);
     if (gameState.bombTiles[i]) {
       tile.innerText = texts.FLAG;
     }
   }
-  elements.restartButton.removeAttribute('disabled');
 }
