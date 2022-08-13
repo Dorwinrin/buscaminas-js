@@ -26,24 +26,26 @@ const texts = {
 };
 
 const elements = {
-  board: document.getElementById('board'),
-  bombsRemainingCounter: document.getElementById('bombsRemaining'),
-  difficulty: document.getElementById('difficulty'),
-  restartButton: document.getElementById('restartButton'),
-  subtitle: document.getElementById('subtitle'),
-  tilesRemainingCounter: document.getElementById('tilesRemaining'),
+  board,
+  bombsRemainingCounter,
+  difficultyForm,
+  restartButton,
+  subtitle,
+  tilesRemainingCounter,
 };
 
-let gameState = createGameState(elements.difficulty.value);
+let state;
 
-(() => {
-  elements.restartButton.onclick = initGame;
+elements.difficultyForm.onsubmit = (event) => {
+  event.preventDefault();
   initGame();
-})();
+};
+
+initGame();
 
 function checkGameState() {
-  const revealedTiles = gameState.revealedTiles.filter((revealed) => revealed).length;
-  if (revealedTiles === gameState.config.tilesAmount - gameState.config.bombsAmount) {
+  const revealedTiles = state.revealedTiles.filter((revealed) => revealed).length;
+  if (revealedTiles === state.config.tilesAmount - state.config.bombsAmount) {
     winGame();
   }
 }
@@ -53,7 +55,7 @@ function disableTile(tile) {
   tile.oncontextmenu = (event) => event.preventDefault();
 }
 
-function createGameState(difficulty) {
+function createGameState(difficulty = 'normal') {
   const config = difficultyModes[difficulty];
 
   return {
@@ -69,31 +71,29 @@ function createGameState(difficulty) {
 function getAdjacentIndices(i) {
   const adjacentIndices = [];
   const { isTop, isLeft, isRight, isBottom } = {
-    isTop: i < gameState.config.columnsAmount,
-    isBottom: i > gameState.config.tilesAmount - gameState.config.columnsAmount,
-    isLeft: i % gameState.config.columnsAmount === 0,
-    isRight: i % gameState.config.columnsAmount === gameState.config.columnsAmount - 1,
+    isTop: i < state.config.columnsAmount,
+    isBottom: i > state.config.tilesAmount - state.config.columnsAmount,
+    isLeft: i % state.config.columnsAmount === 0,
+    isRight: i % state.config.columnsAmount === state.config.columnsAmount - 1,
   };
 
-  if (!isTop && !isLeft) adjacentIndices.push(i - gameState.config.columnsAmount - 1);
-  if (!isTop) adjacentIndices.push(i - gameState.config.columnsAmount);
-  if (!isTop && !isRight) adjacentIndices.push(i - gameState.config.columnsAmount + 1);
+  if (!isTop && !isLeft) adjacentIndices.push(i - state.config.columnsAmount - 1);
+  if (!isTop) adjacentIndices.push(i - state.config.columnsAmount);
+  if (!isTop && !isRight) adjacentIndices.push(i - state.config.columnsAmount + 1);
   if (!isLeft) adjacentIndices.push(i - 1);
   if (!isRight) adjacentIndices.push(i + 1);
-  if (!isBottom && !isLeft) adjacentIndices.push(i + gameState.config.columnsAmount - 1);
-  if (!isBottom) adjacentIndices.push(i + gameState.config.columnsAmount);
-  if (!isBottom && !isRight) adjacentIndices.push(i + gameState.config.columnsAmount + 1);
+  if (!isBottom && !isLeft) adjacentIndices.push(i + state.config.columnsAmount - 1);
+  if (!isBottom) adjacentIndices.push(i + state.config.columnsAmount);
+  if (!isBottom && !isRight) adjacentIndices.push(i + state.config.columnsAmount + 1);
 
   return adjacentIndices;
 }
 
 function handleClick(tile, index) {
   return () => {
-    const clickResult = gameState.bombTiles[index]
-      ? texts.BOMB
-      : gameState.numberTiles[index] || '';
+    const clickResult = state.bombTiles[index] ? texts.BOMB : state.numberTiles[index] || '';
 
-    gameState.revealedTiles[index] = true;
+    state.revealedTiles[index] = true;
     tile.classList.add('revealed');
     tile.innerText = clickResult;
     disableTile(tile);
@@ -109,12 +109,12 @@ function handleClick(tile, index) {
 function handleRightClick(tile, index) {
   return (event) => {
     event.preventDefault();
-    if (gameState.flaggedTiles[index]) {
-      gameState.flaggedTiles[index] = false;
+    if (state.flaggedTiles[index]) {
+      state.flaggedTiles[index] = false;
       tile.innerText = '';
       tile.onclick = handleClick(tile, index);
     } else {
-      gameState.flaggedTiles[index] = true;
+      state.flaggedTiles[index] = true;
       tile.innerText = texts.FLAG;
       tile.onclick = null;
     }
@@ -135,15 +135,16 @@ function initBombs(bombTiles, bombsAmount) {
 }
 
 function initGame() {
-  gameState = createGameState(elements.difficulty.value);
+  const selectedDifficulty = document.querySelector('input[name=difficulty]:checked').value;
+  state = createGameState(selectedDifficulty);
 
   elements.subtitle.innerText = texts.START;
   elements.board.replaceChildren([]);
-  document.documentElement.style.setProperty('--number-of-columns', gameState.config.columnsAmount);
+  document.documentElement.style.setProperty('--number-of-columns', state.config.columnsAmount);
 
-  initTiles(gameState.config.tilesAmount);
-  initBombs(gameState.bombTiles, gameState.config.bombsAmount);
-  initNumbers(gameState.numberTiles, gameState.bombTiles);
+  initTiles(state.config.tilesAmount);
+  initBombs(state.bombTiles, state.config.bombsAmount);
+  initNumbers(state.numberTiles, state.bombTiles);
   updateCounters();
 }
 
@@ -160,9 +161,9 @@ function initNumbers(numberTiles, bombTiles) {
 }
 
 function initTiles(tiles) {
-  gameState.revealedTiles.fill(false);
-  gameState.flaggedTiles.fill(false);
-  gameState.tilesRevealed = 0;
+  state.revealedTiles.fill(false);
+  state.flaggedTiles.fill(false);
+  state.tilesRevealed = 0;
 
   for (let i = 0; i < tiles; i++) {
     const tile = document.createElement('div');
@@ -176,10 +177,10 @@ function initTiles(tiles) {
 
 function loseGame() {
   elements.subtitle.innerText = texts.LOSE;
-  for (let i = 0; i < gameState.config.tilesAmount; i++) {
+  for (let i = 0; i < state.config.tilesAmount; i++) {
     const tile = document.getElementById(`tile-${i}`);
     disableTile(tile);
-    if (gameState.bombTiles[i]) {
+    if (state.bombTiles[i]) {
       const tile = document.getElementById(`tile-${i}`);
       tile.innerText = texts.BOMB;
     }
@@ -195,19 +196,19 @@ function propagateClick(index) {
 }
 
 function updateCounters() {
-  const revealedTiles = gameState.revealedTiles.filter((revealed) => revealed).length;
-  const flaggedTiles = gameState.flaggedTiles.filter((flagged) => flagged).length;
+  const revealedTiles = state.revealedTiles.filter((revealed) => revealed).length;
+  const flaggedTiles = state.flaggedTiles.filter((flagged) => flagged).length;
   elements.tilesRemainingCounter.innerText =
-    gameState.config.tilesAmount - gameState.config.bombsAmount - revealedTiles;
-  elements.bombsRemainingCounter.innerText = gameState.config.bombsAmount - flaggedTiles;
+    state.config.tilesAmount - state.config.bombsAmount - revealedTiles;
+  elements.bombsRemainingCounter.innerText = state.config.bombsAmount - flaggedTiles;
 }
 
 function winGame() {
   elements.subtitle.innerText = texts.WIN;
-  for (let i = 0; i < gameState.config.tilesAmount; i++) {
+  for (let i = 0; i < state.config.tilesAmount; i++) {
     const tile = document.getElementById(`tile-${i}`);
     disableTile(tile);
-    if (gameState.bombTiles[i]) {
+    if (state.bombTiles[i]) {
       tile.innerText = texts.FLAG;
     }
   }
