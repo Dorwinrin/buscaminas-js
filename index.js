@@ -74,23 +74,23 @@ function flagTile(index, tile) {
   tile.onclick = null;
 }
 
-function getAdjacentIndices(i) {
+function getAdjacentIndices(index) {
   const adjacentIndices = [];
   const { isTop, isLeft, isRight, isBottom } = {
-    isTop: i < state.config.columnsAmount,
-    isBottom: i > state.config.tilesAmount - state.config.columnsAmount,
-    isLeft: i % state.config.columnsAmount === 0,
-    isRight: i % state.config.columnsAmount === state.config.columnsAmount - 1,
+    isTop: index < state.config.columnsAmount,
+    isBottom: index > state.config.tilesAmount - state.config.columnsAmount,
+    isLeft: index % state.config.columnsAmount === 0,
+    isRight: index % state.config.columnsAmount === state.config.columnsAmount - 1,
   };
 
-  if (!isTop && !isLeft) adjacentIndices.push(i - state.config.columnsAmount - 1);
-  if (!isTop) adjacentIndices.push(i - state.config.columnsAmount);
-  if (!isTop && !isRight) adjacentIndices.push(i - state.config.columnsAmount + 1);
-  if (!isLeft) adjacentIndices.push(i - 1);
-  if (!isRight) adjacentIndices.push(i + 1);
-  if (!isBottom && !isLeft) adjacentIndices.push(i + state.config.columnsAmount - 1);
-  if (!isBottom) adjacentIndices.push(i + state.config.columnsAmount);
-  if (!isBottom && !isRight) adjacentIndices.push(i + state.config.columnsAmount + 1);
+  if (!isTop && !isLeft) adjacentIndices.push(index - state.config.columnsAmount - 1);
+  if (!isTop) adjacentIndices.push(index - state.config.columnsAmount);
+  if (!isTop && !isRight) adjacentIndices.push(index - state.config.columnsAmount + 1);
+  if (!isLeft) adjacentIndices.push(index - 1);
+  if (!isRight) adjacentIndices.push(index + 1);
+  if (!isBottom && !isLeft) adjacentIndices.push(index + state.config.columnsAmount - 1);
+  if (!isBottom) adjacentIndices.push(index + state.config.columnsAmount);
+  if (!isBottom && !isRight) adjacentIndices.push(index + state.config.columnsAmount + 1);
 
   return adjacentIndices;
 }
