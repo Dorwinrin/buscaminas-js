@@ -68,6 +68,12 @@ function createGameState(difficulty = 'normal') {
   };
 }
 
+function flagTile(index, tile) {
+  state.flaggedTiles[index] = true;
+  tile.innerText = texts.FLAG;
+  tile.onclick = null;
+}
+
 function getAdjacentIndices(i) {
   const adjacentIndices = [];
   const { isTop, isLeft, isRight, isBottom } = {
@@ -110,13 +116,9 @@ function handleRightClick(tile, index) {
   return (event) => {
     event.preventDefault();
     if (state.flaggedTiles[index]) {
-      state.flaggedTiles[index] = false;
-      tile.innerText = '';
-      tile.onclick = handleClick(tile, index);
+      unflagTile(index, tile);
     } else {
-      state.flaggedTiles[index] = true;
-      tile.innerText = texts.FLAG;
-      tile.onclick = null;
+      flagTile(index, tile);
     }
     updateCounters();
   };
@@ -195,6 +197,12 @@ function propagateClick(index) {
   }
 }
 
+function unflagTile(index, tile) {
+  state.flaggedTiles[index] = false;
+  tile.innerText = '';
+  tile.onclick = handleClick(tile, index);
+}
+
 function updateCounters() {
   const revealedTiles = state.revealedTiles.filter((revealed) => revealed).length;
   const flaggedTiles = state.flaggedTiles.filter((flagged) => flagged).length;
@@ -209,7 +217,8 @@ function winGame() {
     const tile = document.getElementById(`tile-${i}`);
     disableTile(tile);
     if (state.bombTiles[i]) {
-      tile.innerText = texts.FLAG;
+      flagTile(i, tile);
     }
   }
+  updateCounters();
 }
